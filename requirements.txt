@@ -1,0 +1,6 @@
+opencv-python
+imutils
+scipy
+pytesseract
+matplotlib
+opencv_contrib_python

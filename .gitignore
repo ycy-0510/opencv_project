@@ -1,0 +1,8 @@
+/input
+/face
+/output
+.DS_Store
+temp.py
+# temp files
+*.tmp
+*.log
