@@ -45,17 +45,19 @@ while True:
     scan_detection(frame_copy)
 
     cv2.imshow("input", frame_copy)
-    wrapped = four_point_transform(frame_copy, document_contour.reshape(4, 2))
+    wrapped = four_point_transform(frame, document_contour.reshape(4, 2))
     current_wrap = cv2.resize(wrapped, (80, 60))
     diff = cv2.absdiff(cv2.cvtColor(prev_wrap, cv2.COLOR_BGR2GRAY), cv2.cvtColor(current_wrap, cv2.COLOR_BGR2GRAY)) if prev_wrap is not None else None
-    # Count white area in wrapped image (cvt to hsv and value > 200)
-    white_area_in_wrapped = cv2.countNonZero(cv2.inRange(cv2.cvtColor(wrapped, cv2.COLOR_BGR2HSV), (0, 0, 200), (180, 30, 255)))
+    # Count white area in wrapped image (cvt to grey and value > 150)
+    white_area = cv2.inRange(cv2.cvtColor(wrapped, cv2.COLOR_BGR2GRAY), 150, 255)
+    white_area_in_wrapped_rate = cv2.countNonZero(white_area) / (white_area.shape[0] * white_area.shape[1])
+    cv2.imshow("white area", white_area)
     if diff is not None:
         cv2.imshow("diff", diff)
         non_zero_count = cv2.countNonZero(diff)
         if non_zero_count < 5000:
             print("No significant change detected, skipping update.")
-            if white_area_in_wrapped > 250000:
+            if white_area_in_wrapped_rate > 0.5:
                 if focus_measure(wrapped) < 100:
                     print("Image is blurry, skipping update.")
                     continue
@@ -63,7 +65,7 @@ while True:
                 cv2.imwrite("scan/scanned.jpg", wrapped)
                 exit(0)
             else:
-                print(f"No document detected. {white_area_in_wrapped}")
+                print(f"No document detected. {white_area_in_wrapped_rate * 100:.2f}% white area.")
         else:
             print(non_zero_count)
     cv2.imshow("scanned", wrapped)
