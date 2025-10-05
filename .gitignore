@@ -6,3 +6,7 @@ temp.py
 # temp files
 *.tmp
 *.log
+yolov4.weights
+yolov4.cfg
+*.mp4
+*.mov
