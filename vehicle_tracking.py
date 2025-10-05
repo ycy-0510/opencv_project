@@ -21,9 +21,6 @@ class TrackableObject:
         self.updated_frames = current_frame
 
 
-SHOW_SLIDER_FOR_DEBUG = False
-
-
 # int, TrackableObject
 tracking_obj: dict[int, TrackableObject] = {}
 auto_id = 0
@@ -43,41 +40,17 @@ WIDTH = 720
 prev_left_count = 0
 prev_right_count = 0
 
-if SHOW_SLIDER_FOR_DEBUG:
-    cv2.startWindowThread()
-    cv2.namedWindow("Slider", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Slider", 400, 100)
-    cv2.createTrackbar("x1", "Slider", 0, WIDTH, lambda x: None)
-    cv2.createTrackbar("y1", "Slider", 0, HEIGHT, lambda x: None)
-    cv2.createTrackbar("x2", "Slider", WIDTH, WIDTH, lambda x: None)
-    cv2.createTrackbar("y2", "Slider", HEIGHT, HEIGHT, lambda x: None)
-
-debug_x1, debug_y1, debug_x2, debug_y2 = 35, 0, 435, HEIGHT
-
+x1, y1, x2, y2 = 0, 0, WIDTH, HEIGHT
+central_line_calculated = False
 
 def get_column(x, y):
     # check if m < 0, below (>0) is right, otherwise left
-    m = (debug_y2 - debug_y1) / (debug_x2 - debug_x1)
-    dy = (m * x - debug_x1 * m) - y
+    m = (y2 - y1) / (x2 - x1)
+    dy = (m * x - x1 * m + y1) - y
     return 0 if (dy > 0) == (m < 0) else 1
 
 
 while True:
-    if SHOW_SLIDER_FOR_DEBUG:
-        x1 = cv2.getTrackbarPos("x1", "Slider")
-        y1 = cv2.getTrackbarPos("y1", "Slider")
-        x2 = cv2.getTrackbarPos("x2", "Slider")
-        y2 = cv2.getTrackbarPos("y2", "Slider")
-        if x2 > x1:
-            debug_x1, debug_x2 = x1, x2
-        else:
-            debug_x1, debug_x2 = 0, WIDTH
-        if y2 > y1:
-            debug_y1, debug_y2 = y1, y2
-        else:
-            debug_y1, debug_y2 = 0, HEIGHT
-        print(f"Debug Line: ({debug_x1}, {debug_y1}) to ({debug_x2}, {debug_y2})")
-
     duration = (cv2.getTickCount() - start_time) / cv2.getTickFrequency()
     ret, frame = cap.read()
     if not ret:
@@ -90,6 +63,40 @@ while True:
     retry_count = 0
 
     frame = cv2.resize(frame, (WIDTH, HEIGHT))
+    if not central_line_calculated:
+        edge = cv2.Canny(frame, 100, 200)
+        # strong the line of edge
+        edge = cv2.dilate(edge, None, iterations=2)
+        # thin the line of edge
+        edge = cv2.erode(edge, None, iterations=3)
+        edge = cv2.GaussianBlur(edge, (5, 5), 0)
+        # find the central line of edge
+        lines = cv2.HoughLinesP(
+            edge, 1, np.pi / 180, threshold=100, minLineLength=100, maxLineGap=10
+        )
+        if lines is not None:
+            tavgx1, tavgy1, tavgx2, tavgy2 = 0, 0, 0, 0
+            count = 0
+            for line in lines:
+                tx1, ty1, tx2, ty2 = line[0]
+                if (
+                    (abs(ty2 - ty1) > 0.5 * abs(tx2 - tx1))
+                    and abs((tx1 + tx2) / 2 - (WIDTH / 2 - 50)) < 100
+                    and abs((ty1 + ty2) / 2 - HEIGHT / 2) < 100
+                ):  # only keep near vertical lines
+                    cv2.line(frame, (tx1, ty1), (tx2, ty2), (0, 255, 255), 2)
+                    count += 1
+                    tavgx1 += tx1
+                    tavgy1 += ty1
+                    tavgx2 += tx2
+                    tavgy2 += ty2
+            if count > 0:
+                tavgx1 //= count
+                tavgy1 //= count
+                tavgx2 //= count
+                tavgy2 //= count
+                x1, y1, x2, y2 = tavgx1, tavgy1, tavgx2, tavgy2
+                central_line_calculated = True
     (class_ids, scores, boxes) = od.detect(frame)
     center_points_curr: list[tuple[int, int]] = []
     for box in boxes:
@@ -105,7 +112,7 @@ while True:
         best_match_distance = float("inf")
         for id, obj in tracking_obj.items():
             pt2 = obj.center_point
-            distance = math.hypot( (pt2[0] - pt1[0]), (pt2[1] - pt1[1]))
+            distance = math.hypot((pt2[0] - pt1[0]), (pt2[1] - pt1[1]))
             if (
                 distance < 200
                 and distance < best_match_distance
@@ -153,7 +160,7 @@ while True:
         else:
             prev_right_count += 1
         del tracking_obj[id]
-    cv2.line(frame, (debug_x1, debug_y1), (debug_x2, debug_y2), (255, 0, 0), 2)
+    cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
     print(
         f"Vehicle count: {len(tracking_obj)+prev_count} ({(len(tracking_obj)+prev_count)/duration:.2f} Vehicle/s),Left: {left_count+ prev_left_count}, Right: {right_count+prev_right_count}, FPS: {frame_count/duration:.2f}"
     )
@@ -187,7 +194,7 @@ while True:
     )
     cv2.imshow("Frame", frame_to_show)
 
-    if cv2.waitKey(0 if SHOW_SLIDER_FOR_DEBUG else 1) & 0xFF == ord("q"):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     frame_count += 1
 cap.release()
