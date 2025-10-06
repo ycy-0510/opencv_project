@@ -39,17 +39,30 @@ class TrafficData:
 
     def to_string(self):
         return f"Total vehicles: {self.total_count}, Rate: {self.rate:.2f} vehicles/s, Left vehicles: {self.left_count}, Left Rate: {self.left_rate:.2f} vehicles/s, Right vehicles: {self.right_count}, Right Rate: {self.right_rate:.2f} vehicles/s, Duration: {self.duration:.2f} s, Average Speed: {self.avg_speed:.2f} km/h, Average Left Speed: {self.avg_left_speed:.2f} km/h, Average Right Speed: {self.avg_right_speed:.2f} km/h"
-
+    def to_json(self):
+        return {
+            "total_count": self.total_count,
+            "rate": self.rate,
+            "left_count": self.left_count,
+            "right_count": self.right_count,
+            "left_rate": self.left_rate,
+            "right_rate": self.right_rate,
+            "duration": self.duration,
+            "avg_speed": self.avg_speed,
+            "avg_left_speed": self.avg_left_speed,
+            "avg_right_speed": self.avg_right_speed,
+        }
 
 def _safe_divide(a, b):
     return a / b if b != 0 else 0.0
 
 
-def get_traffic_data():
+def get_default_stream_url():
+    return "https://cctvn5.freeway.gov.tw/abs2mjpg/bmjpg?camera=f79f2f81-126d-450f-9152-9c844567a233"
 
-    stream_url = "https://cctvn5.freeway.gov.tw/abs2mjpg/bmjpg?camera=f79f2f81-126d-450f-9152-9c844567a233"
+def get_traffic_data():
     # Load the video
-    cap = cv2.VideoCapture(stream_url)
+    cap = cv2.VideoCapture(get_default_stream_url())
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 避免幀積壓
     cap.set(cv2.CAP_PROP_FPS, 10)  # 限制FPS，降低負載
     if not cap.isOpened():
@@ -99,7 +112,7 @@ def get_traffic_data():
             if retry_count < 5:
                 retry_count += 1
                 cap.release()
-                cap = cv2.VideoCapture(stream_url)
+                cap = cv2.VideoCapture(get_default_stream_url())
                 continue
             break
         retry_count = 0

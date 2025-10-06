@@ -48,3 +48,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / '_unused_media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# 背景交通統計排程間隔秒數 (預設 10 分鐘)。可在部署環境中覆寫。
+TRAFFIC_JOB_INTERVAL = int(os.environ.get('TRAFFIC_JOB_INTERVAL', '600'))
+# 保留在記憶體中的歷史交通紀錄筆數上限
+TRAFFIC_HISTORY_LIMIT = int(os.environ.get('TRAFFIC_HISTORY_LIMIT', '1000'))
