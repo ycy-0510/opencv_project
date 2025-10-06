@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:40px; line-height:1.5; }
+      header { margin-bottom:2rem; }
+      h1 { font-size:1.9rem; margin:0 0 .5rem; }
+      .card { border:1px solid #ddd; border-radius:8px; padding:1.25rem; max-width:640px; background:#fafafa; }
+      .muted { color:#666; font-size:.9rem; }
+      code { background:#eee; padding:2px 4px; border-radius:4px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>預設 Dashboard</h1>
+      <p class="muted">這是一個最小化的佈景頁面，僅供之後擴充。</p>
+    </header>
+    <section class="card">
+      <h2 style="margin-top:0">開始自訂</h2>
+      <ol>
+        <li>在 <code>dashboard/views.py</code> 新增你的 view。</li>
+        <li>在 <code>dashboard/templates/dashboard/</code> 建立新模板。</li>
+        <li>於 <code>dashboard/urls.py</code> 加上對應路由。</li>
+      </ol>
+      <p class="muted">現在顯示的是純靜態內容，沒有任何後端邏輯。</p>
+    </section>
+  </body>
+</html>
