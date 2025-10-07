@@ -39,7 +39,7 @@ while True:
     faces = face_cascade.detectMultiScale(gray, scaleFactor=2, minNeighbors=5)
     for x, y, w, h in faces:
         cv2.circle(frame, (x + w // 2, y + h // 2), (w + h) // 4, (0, 0, 255), 10)
-        # frame = blur_face_circle(frame, (x, y, w, h))
+        frame = blur_face_circle(frame, (x, y, w, h))
     cv2.imshow("Face Detection", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break

@@ -60,9 +60,20 @@ def _safe_divide(a, b):
 def get_default_stream_url():
     return "https://cctvn5.freeway.gov.tw/abs2mjpg/bmjpg?camera=f79f2f81-126d-450f-9152-9c844567a233"
 
-def get_traffic_data():
+def get_traffic_data(max_frames: int = 200, stream_url: str | None = None):
+    """Capture traffic metrics for a limited number of frames then return aggregated statistics.
+
+    Parameters
+    ----------
+    max_frames : int
+        Maximum number of frames to process (default 200). Smaller數字可加速回傳（開發用）
+    stream_url : str | None
+        Optional override for the video stream URL. If None use default.
+    """
+    if max_frames <= 0:
+        raise ValueError("max_frames must be > 0")
     # Load the video
-    cap = cv2.VideoCapture(get_default_stream_url())
+    cap = cv2.VideoCapture(stream_url or get_default_stream_url())
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 避免幀積壓
     cap.set(cv2.CAP_PROP_FPS, 10)  # 限制FPS，降低負載
     if not cap.isOpened():
@@ -83,8 +94,8 @@ def get_traffic_data():
     prev_count = 0
 
     ROAD_DISTANCE = {
-        "left": 32,
-        "right": 32,
+        "left": 50,
+        "right": 50,
     }  # meters, approximate distance of the road segment being monitored
 
     HEIGHT = 360
@@ -112,7 +123,7 @@ def get_traffic_data():
             if retry_count < 5:
                 retry_count += 1
                 cap.release()
-                cap = cv2.VideoCapture(get_default_stream_url())
+                cap = cv2.VideoCapture(stream_url or get_default_stream_url())
                 continue
             break
         retry_count = 0
@@ -271,7 +282,7 @@ def get_traffic_data():
             break
         frame_count += 1
         if __name__ != "__main__":
-            if frame_count >= 200:
+            if frame_count >= max_frames:
                 # clear current tracking and save to prev_count
                 left_need_speed_data = len(left_speeds) < 3
                 right_need_speed_data = len(right_speeds) < 3

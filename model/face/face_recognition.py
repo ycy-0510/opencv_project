@@ -21,47 +21,11 @@ while True:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray,1.1,5)
 
-    name = {
-        0: "01",
-        1: "03",
-        2: "04",
-        3: "05",
-        4: "06",
-        5: "07",
-        6: "08",
-        7: "09",
-        8: "10",
-        9: "11",
-        10: "12",
-        11: "13",
-        12: "14",
-        13: "15",
-        14: "16",
-        15: "17",
-        16: "18",
-        17: "19",
-        18: "20",
-        19: "21",
-        20: "22",
-        21: "23",
-        22: "24",
-        23: "25",
-        24: "26",
-        25: "27",
-        26: "28",
-        27: "29",
-        28: "30",
-        29: "31",
-        30: "32",
-        31: "33",
-        32: "34",
-        33: "mon",
-    }
     for x, y, w, h in faces:
         idnum, confidence = recognizer.predict(gray[y : y + h, x : x + w])
         if confidence < 60:
             color = (0, 255, 0)
-            text = f"{name[idnum]} {round(100 - confidence)}%"
+            text = f"{idnum} {round(100 - confidence)}%"
         else:
             color = (0, 0, 255)
             text = "unknown"

@@ -5,3 +5,7 @@ pytesseract
 matplotlib
 opencv_contrib_python
 django
+streamlit
+streamlit-webrtc
+fastapi
+uvicorn
