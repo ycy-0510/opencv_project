@@ -1,10 +1,14 @@
 # OpenCV Project
-This project demonstrates various computer vision techniques using OpenCV, including object detection, tracking, and image processing.
+This project demonstrates various computer vision applications using OpenCV, including vehicle tracking, face recognition, and document scanning.
 
 ## Features
 - Vehicle detection and tracking
 - Face recognition
 - Auto Document Scanner
+
+# Demo Video
+[![Demo Video](http://img.youtube.com/vi/FDyMfT0Kk-k/0.jpg)](http://www.youtube.com/watch?v=FDyMfT0Kk-k)
+
 
 # Installation
 ```bash
